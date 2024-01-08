@@ -4,6 +4,7 @@ package com.crio.warmup.stock;
 
 import com.crio.warmup.stock.dto.*;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
@@ -45,8 +46,16 @@ public class PortfolioManagerApplication {
   //  2. You can use "./gradlew build" to check if your code builds successfully.
 
   public static List<String> mainReadFile(String[] args) throws IOException, URISyntaxException {
-
-     return Collections.emptyList();
+      String fileName = args[0];
+      File inputFile = resolveFileFromResources(fileName);
+      ObjectMapper objectMapper = getObjectMapper();
+      List<PortfolioTrade> portfolioTradesList = objectMapper.readValue(
+              inputFile
+              , new TypeReference<List<PortfolioTrade>>() {});
+     return portfolioTradesList
+             .stream()
+             .map(PortfolioTrade::getSymbol)
+             .collect(Collectors.toList());
   }
 
 
