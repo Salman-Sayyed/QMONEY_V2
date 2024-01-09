@@ -1,0 +1,1 @@
+curl -X GET 'https://api.tiingo.com/tiingo/daily/GOOGL/prices?token=563215e0b5346ebd0652d0754f62e58e34315a8e'
