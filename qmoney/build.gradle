@@ -44,6 +44,15 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
+task customFatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.crio.warmup.stock.PortfolioManagerApplication'
+    }
+    archiveBaseName = 'qmoney_v2'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    destinationDirectory = file("target")
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
 
 

@@ -71,4 +71,9 @@ class ModuleTwoTest {
     Assertions.assertEquals(expected, actual);
   }
 
+  @Test
+  void getToken(){
+    Assertions.assertNotNull(PortfolioManagerApplication.getToken());
+  }
+
 }
