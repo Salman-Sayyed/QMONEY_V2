@@ -1,4 +1,8 @@
 {
+<<<<<<< HEAD
   "module_id": "ME_QMONEY_V2_MODULE_CALCULATIONS",
+=======
+  "module_id": "ME_QMONEY_V2_MODULE_REFACTOR",
+>>>>>>> 215324de306f31ad5a5ff139f1a2042675892e9f
   "me_id": "ME_QMONEY_V2"
 }

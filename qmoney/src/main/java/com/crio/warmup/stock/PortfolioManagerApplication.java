@@ -2,6 +2,9 @@ package com.crio.warmup.stock;
 
 import com.crio.warmup.stock.dto.*;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
+import com.crio.warmup.stock.portfolio.PortfolioManager;
+import com.crio.warmup.stock.portfolio.PortfolioManagerFactory;
+import com.crio.warmup.stock.portfolio.PortfolioManagerImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -23,11 +26,13 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 
 
 
 public class PortfolioManagerApplication {
+
 
     public static String getToken(){
         String filePath = "config.json";
@@ -36,9 +41,13 @@ public class PortfolioManagerApplication {
         Secrets secret;
         try {
             configFile = resolveFileFromResources(filePath);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        try {
             secret = oM.readValue(configFile,Secrets.class);
-        } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException("failed to load config.json file");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         return secret.TIINGO_API_TOKEN;
     }
@@ -190,11 +199,6 @@ public class PortfolioManagerApplication {
 
     public static AnnualizedReturn calculateAnnualizedReturns(LocalDate endDate,
       PortfolioTrade trade, Double buyPrice, Double sellPrice) {
-//        LocalDate startDate = trade.getPurchaseDate();
-//        double total_num_years = trade.getPurchaseDate().until(endDate,ChronoUnit.DAYS)/365.24;
-//        double total_returns = (sellPrice-buyPrice)/buyPrice;
-//        double annualized_returns = Math.pow((1 + total_returns),(1 / total_num_years)) - 1;
-//      return new AnnualizedReturn(trade.getSymbol(), annualized_returns, total_returns);
             //HPR is HoldingPeriodReturn
             Double HPR = getHoldingPeriodReturn(buyPrice, sellPrice);
             Double time = trade.getPurchaseDate().until(endDate, ChronoUnit.DAYS)/365.24;
@@ -203,14 +207,46 @@ public class PortfolioManagerApplication {
 
         }
 
+  // TODO: CRIO_TASK_MODULE_REFACTOR
+  //  Once you are done with the implementation inside PortfolioManagerImpl and
+  //  PortfolioManagerFactory, create PortfolioManager using PortfolioManagerFactory.
+  //  Refer to the code from previous modules to get the List<PortfolioTrades> and endDate, and
+  //  call the newly implemented method in PortfolioManager to calculate the annualized returns.
+
+  // Note:
+  // Remember to confirm that you are getting same results for annualized returns as in Module 3.
+
+  public static List<AnnualizedReturn> mainCalculateReturnsAfterRefactor(String[] args)
+      throws Exception {
+       String file = args[0];
+       LocalDate endDate = LocalDate.parse(args[1]);
+       String contents = readFileAsString(file);
+       ObjectMapper objectMapper = getObjectMapper();
+       RestTemplate restTemplate = getRestTemplate();
+       PortfolioManager portfolioManager = PortfolioManagerFactory.getPortfolioManager(restTemplate);
+       PortfolioTrade[] trades = objectMapper.readValue(contents,PortfolioTrade[].class);
+       return portfolioManager.calculateAnnualizedReturn(Arrays.asList(trades), endDate);
+  }
+
+    private static String readFileAsString(String file) throws Exception {
+        File jsonFile = resolveFileFromResources(file);
+        Scanner scanner = new Scanner(jsonFile);
+        scanner.useDelimiter("\\Z");
+        return scanner.next();
+    }
+
+    private static RestTemplate getRestTemplate(){
+        return new RestTemplate();
+  }
+
+
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
     ThreadContext.put("runId", UUID.randomUUID().toString());
-
-    printJsonObject(mainReadFile(args));
-    printJsonObject(mainReadQuotes(args));
-    printJsonObject(mainCalculateSingleReturn(args));
-
+//    printJsonObject(mainReadFile(args));
+//    printJsonObject(mainReadQuotes(args));
+//    printJsonObject(mainCalculateSingleReturn(args));
+    printJsonObject(mainCalculateReturnsAfterRefactor(args));
   }
 }
 
